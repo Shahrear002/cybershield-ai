@@ -61,7 +61,58 @@ CyberShield AI uses a fully decoupled architecture connecting the client and the
 
 ---
 
+## 🧩 Core Architectural Engines & Workflows
+
+CyberShield AI is structured into six key architectural components, each managing a distinct phase of the triage, proof securing, and threat mitigation lifecycle.
+
+### 1. 🤖 Digital Victim Advocate Chatbot
+* **Architecture**: A stateful conversational agent built as a client-side Vue/Nuxt interface connecting to the Spring Boot AI orchestration pipeline. It utilizes streaming chat boundaries to keep the conversation responsive and uses custom system prompting to establish a safe, empathetic, and professional persona.
+* **Workflow**:
+  1. The victim enters a description of the cybercrime in plain natural language (e.g., chat transcript or incident narrative).
+  2. The chatbot guides the user with context-aware, follow-up questions, simplifying complex legal terms into accessible language.
+  3. Once the interaction completes, the chatbot structures the chat history and passes it directly to the Case Classification Engine.
+
+### 2. 📚 RAG Legal Engine (Retrieval-Augmented Generation)
+* **Architecture**: Combining Spring AI's structured vector loaders with Groq/Llama-3.3 LLM embeddings. It integrates legal resources, procedural guidelines, and Ejahar complaint templates from the **Bangladesh Cyber Security Act 2023** into a searchable index.
+* **Workflow**:
+  1. During incident analysis, the engine extracts semantic key-phrases (e.g., "shared photos without permission", "extorted money via WhatsApp").
+  2. It queries the local knowledge store to retrieve exact sections (e.g., Section 24 for Identity Impersonation, Section 28 for Offensive Speech) and relevant legal templates.
+  3. The retrieved legal provisions are injected into the LLM system prompt context, ensuring that the generated complaint letter is legally grounded and uses correct statutory mappings.
+
+### 3. 🏷️ Case Classification Engine
+* **Architecture**: A high-performance classification pipeline that parses raw texts into strongly-typed Java records (e.g., `TriageAnalysis`) utilizing structured output converters (`BeanOutputConverter`) of Spring AI.
+* **Workflow**:
+  1. Accepts the raw conversational transcript from the Digital Victim Advocate.
+  2. The LLM parses, identifies, and categorizes the incident into standard classes: **Cyber Harassment, Hacking, Impersonation, Blackmail, Cyberbullying, or Financial Fraud**.
+  3. Outputs a normalized JSON payload containing the assigned class, computed risk score (1–100), severity label, primary offender details (handles, platforms), and legal justification notes, immediately updating the user's dashboard view.
+
+### 4. 🔒 Secure Evidence Vault (Blockchain Layer)
+* **Architecture**: A cryptographically secured caching repository integrated on the Spring Boot backend. It utilizes memory-efficient binary stream readers and Java `MessageDigest` APIs to compute file signatures.
+* **Workflow**:
+  1. Complainant uploads files (screenshots, video evidence, PDF exports, or chat logs) representing the crime proof.
+  2. The backend streams the uploaded binary and generates a unique **SHA-256 fingerprint**.
+  3. The fingerprint is anchored on a simulated blockchain layer, generating an EVM-style transaction certificate containing the evidence hash, a unique transaction hash (`0x...`), and a verified UTC timestamp.
+  4. The certificate is stored on the client as a tamper-proof receipt to be appended directly to the final police Ejahar report.
+
+### 5. 📡 Cyber Threat Intelligence System
+* **Architecture**: An analytical backend service that processes anonymized incident data, checking for repeating patterns and entities.
+* **Workflow**:
+  1. On each successful FIR generation, the system parses and anonymizes victim names, storing the accused details (e.g., Telegram handle `@darkh4ck3r`, phone number, or profile ID) in the database.
+  2. An intelligence daemon scans active case data to identify cross-victim correlations, detect repeat offenders, and plot regional/platform threat distribution maps.
+  3. Feeds these threat patterns into the prevention layer for predictive threat mitigation.
+
+### 6. 🚨 Early Warning & Prevention Layer
+* **Architecture**: A rule-based and predictive safety monitoring layer built inside the client-side composables and backend alert notification hubs.
+* **Workflow**:
+  1. The Case Classification Engine checks if an incident's calculated risk score exceeds a critical threshold (e.g., $> 75$ or "Critical" blackmail).
+  2. The system triggers immediate real-time safety warnings on the UI: advising the victim to immediately disable active accounts, take specific security steps, or contact nearby law enforcement units.
+  3. Relevant emergency response recommendations are automatically attached to the printable draft Ejahar document for Duty Officers to fast-track high-risk cases.
+
+---
+
 ## 🚀 How It Works
+
+![CyberShield AI Serpentine Workflow](./workflow_diagram.png)
 
 ```mermaid
 sequenceDiagram
