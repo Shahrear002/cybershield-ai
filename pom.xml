@@ -1,0 +1,382 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- =========================================================
+         Project Coordinates
+         ========================================================= -->
+    <groupId>com.cybershield</groupId>
+    <artifactId>cybershield-ai</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+    <name>CyberShield AI</name>
+    <description>
+        CyberShield AI — Integrated Digital Rights, Safety and Justice Platform.
+        Hackathon prototype leveraging Spring Boot 3.x and Spring AI for
+        automated incident classification and risk assessment.
+    </description>
+
+    <!-- =========================================================
+         Parent: Spring Boot BOM — controls all dependency versions
+         ========================================================= -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.3.2</version>
+        <relativePath/> <!-- Resolve from Maven Central -->
+    </parent>
+
+    <!-- =========================================================
+         Global Properties
+         ========================================================= -->
+    <properties>
+        <!-- Java version -->
+        <java.version>17</java.version>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+        <!-- Dependency versions not managed by Spring Boot parent -->
+        <spring-ai.version>1.0.0-M1</spring-ai.version>
+        <lombok.version>1.18.34</lombok.version>
+        <mapstruct.version>1.5.5.Final</mapstruct.version>
+    </properties>
+
+    <!-- =========================================================
+         Dependency Management — BOM imports for Spring AI
+         ========================================================= -->
+    <dependencyManagement>
+        <dependencies>
+            <!--
+                Spring AI Bill of Materials.
+                Aligns all spring-ai-* artifact versions consistently.
+                Must be imported AFTER spring-boot-starter-parent to
+                avoid version conflicts.
+            -->
+            <dependency>
+                <groupId>org.springframework.ai</groupId>
+                <artifactId>spring-ai-bom</artifactId>
+                <version>${spring-ai.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <!-- =========================================================
+         Dependencies
+         ========================================================= -->
+    <dependencies>
+
+        <!-- ── Core Web ──────────────────────────────────────── -->
+
+        <!--
+            Spring MVC + embedded Tomcat.
+            Provides @RestController, @RequestMapping, DispatcherServlet, etc.
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!--
+            Jackson JSON serialization/deserialization.
+            Explicitly included for clarity; also transitively pulled by starter-web.
+            Includes: jackson-databind, jackson-datatype-jsr310 (Java 8 Time support).
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-json</artifactId>
+        </dependency>
+
+        <!-- ── Data & Persistence ────────────────────────────── -->
+
+        <!--
+            Spring Data JPA with Hibernate 6.
+            Enables @Entity, @Repository, JpaRepository, JPQL queries.
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
+        <!--
+            H2 in-memory database for local development and testing.
+            Scope 'runtime' — not needed at compile time.
+            Provides the H2 web console at /h2-console.
+        -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!--
+            PostgreSQL JDBC driver for production deployments.
+            Scope 'runtime' — only needed when running against PostgreSQL.
+            Activate via Spring profile: spring.profiles.active=prod
+        -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- ── Validation ────────────────────────────────────── -->
+
+        <!--
+            Jakarta Bean Validation (Hibernate Validator implementation).
+            Enables @Valid, @NotNull, @NotBlank, @Size on DTO fields.
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <!-- ── Spring AI — LLM Integration ───────────────────── -->
+
+        <!--
+            Spring AI OpenAI Starter.
+            Auto-configures ChatClient, EmbeddingClient beans for OpenAI.
+            Requires: spring.ai.openai.api-key in application.yml (or env var).
+            Model used in this project: gpt-4o-mini (configurable).
+
+            To switch to Google Gemini, replace with:
+            <artifactId>spring-ai-vertex-ai-gemini-spring-boot-starter</artifactId>
+            and configure spring.ai.vertex.ai.gemini.* properties.
+        -->
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-openai-spring-boot-starter</artifactId>
+            <!-- Version managed by spring-ai-bom -->
+        </dependency>
+
+        <!--
+            OPTIONAL: Uncomment to use Google Gemini instead of / alongside OpenAI.
+            Requires: Google Cloud credentials and Vertex AI setup.
+        -->
+        <!--
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-vertex-ai-gemini-spring-boot-starter</artifactId>
+        </dependency>
+        -->
+
+        <!-- ── Developer Experience ──────────────────────────── -->
+
+        <!--
+            Lombok: compile-time annotation processor for boilerplate reduction.
+            Generates: @Getter/@Setter, @Builder, @NoArgsConstructor,
+            @AllArgsConstructor, @Data, @Slf4j, etc.
+            'optional' prevents it from being included in dependent projects.
+        -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+            <optional>true</optional>
+        </dependency>
+
+        <!--
+            MapStruct: compile-time DTO ↔ Entity mapping code generation.
+            Must be declared AFTER Lombok in the annotation processor chain.
+        -->
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
+            <version>${mapstruct.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct-processor</artifactId>
+            <version>${mapstruct.version}</version>
+            <optional>true</optional>
+        </dependency>
+
+        <!--
+            Spring Boot DevTools: live reload, faster restart, H2 console access.
+            Only active in development — excluded from production builds.
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <scope>runtime</scope>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- ── Testing ───────────────────────────────────────── -->
+
+        <!--
+            Spring Boot Test Starter:
+            Includes JUnit 5, Mockito, AssertJ, Spring Test, MockMvc.
+            'test' scope — not included in the final JAR.
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
+
+    <!-- =========================================================
+         Repositories — Spring AI milestone / snapshot artifacts
+         are published to Spring's own repos, not Maven Central.
+         ========================================================= -->
+    <repositories>
+        <repository>
+            <id>spring-milestones</id>
+            <name>Spring Milestones</name>
+            <url>https://repo.spring.io/milestone</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>spring-snapshots</id>
+            <name>Spring Snapshots</name>
+            <url>https://repo.spring.io/snapshot</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+        </repository>
+    </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>spring-milestones</id>
+            <name>Spring Milestones</name>
+            <url>https://repo.spring.io/milestone</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>
+        <pluginRepository>
+            <id>spring-snapshots</id>
+            <name>Spring Snapshots</name>
+            <url>https://repo.spring.io/snapshot</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+        </pluginRepository>
+    </pluginRepositories>
+
+    <!-- =========================================================
+         Build Plugins
+         ========================================================= -->
+    <build>
+        <plugins>
+
+            <!--
+                Spring Boot Maven Plugin.
+                Provides: mvn spring-boot:run, mvn spring-boot:build-image,
+                repackaging to an executable fat JAR.
+                Excludes Lombok from the final JAR (annotation-only at runtime).
+            -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                    <!-- Expose build information via /actuator/info (optional) -->
+                    <additionalProperties>
+                        <encoding.source>UTF-8</encoding.source>
+                        <encoding.reporting>UTF-8</encoding.reporting>
+                        <java.version>${java.version}</java.version>
+                    </additionalProperties>
+                </configuration>
+            </plugin>
+
+            <!--
+                Maven Compiler Plugin.
+                Explicit configuration ensures:
+                - Java 17 source/target compatibility
+                - Lombok and MapStruct annotation processors run in the
+                  correct order (Lombok MUST precede MapStruct)
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <annotationProcessorPaths>
+                        <!-- Lombok must come BEFORE MapStruct -->
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                        <path>
+                            <groupId>org.mapstruct</groupId>
+                            <artifactId>mapstruct-processor</artifactId>
+                            <version>${mapstruct.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                    <compilerArgs>
+                        <!-- Enable MapStruct verbose logging during build (optional) -->
+                        <!-- <arg>-Amapstruct.verbose=true</arg> -->
+                    </compilerArgs>
+                </configuration>
+            </plugin>
+
+            <!--
+                Maven Surefire Plugin.
+                Runs JUnit 5 tests. Configured to display test output in console
+                and fail the build on test errors.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <useSystemClassLoader>false</useSystemClassLoader>
+                </configuration>
+            </plugin>
+
+        </plugins>
+    </build>
+
+    <!-- =========================================================
+         Profiles
+         ========================================================= -->
+    <profiles>
+
+        <!--
+            Development Profile (default active).
+            Uses H2 in-memory DB, enables DevTools, seeds data.
+        -->
+        <profile>
+            <id>dev</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <spring.profiles.active>dev</spring.profiles.active>
+            </properties>
+        </profile>
+
+        <!--
+            Production Profile.
+            Uses PostgreSQL, disables H2 console, disables DataSeeder.
+            Activate with: mvn spring-boot:run -P prod
+        -->
+        <profile>
+            <id>prod</id>
+            <properties>
+                <spring.profiles.active>prod</spring.profiles.active>
+            </properties>
+        </profile>
+
+    </profiles>
+
+</project>

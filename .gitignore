@@ -1,0 +1,57 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# OS/System Files
+# ─────────────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.tmp
+*.bak
+*.swp
+*~
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Backend / Maven / Spring Boot
+# ─────────────────────────────────────────────────────────────────────────────
+target/
+!.mvn/wrapper/maven-wrapper.jar
+.project
+.classpath
+.settings/
+.factorypath
+*.class
+*.jar
+*.war
+*.ear
+*.log
+dependency-reduced-pom.xml
+h2-database/
+*.db
+
+# IDEs (IntelliJ, Eclipse, VS Code)
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.settings/
+.metadata/
+.apt_generated/
+.apt_generated_tests/
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Frontend / Nuxt 3 / Node
+# ─────────────────────────────────────────────────────────────────────────────
+client/node_modules/
+client/.nuxt/
+client/.output/
+client/dist/
+client/npm-debug.log*
+client/yarn-debug.log*
+client/yarn-error.log*
+client/.env
+
+# ─────────────────────────────────────────────────────────────────────────────
+# AI / Local Logs / System Specifics
+# ─────────────────────────────────────────────────────────────────────────────
+.gemini/
+.antigravityignore
+/Users/shahrearrahman/.gemini/
