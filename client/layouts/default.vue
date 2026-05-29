@@ -40,6 +40,7 @@
         </p>
 
         <NavItem to="/" icon="dashboard" label="Dashboard" />
+        <NavItem to="/chat" icon="chat" label="Chat With Advocate" />
         <NavItem to="/advocate" icon="triage" label="AI Triage" badge="Live" />
         <NavItem to="/vault" icon="vault" label="Evidence Vault" />
         <NavItem to="/fir-compiler" icon="fir" label="FIR Compiler" badge="New" />
@@ -142,6 +143,7 @@ onUnmounted(() => clearInterval(timer))
 const pageTitle = computed(() => {
   const map: Record<string, string> = {
     '/':              'Dashboard',
+    '/chat':          'Chat With Advocate',
     '/advocate':      'AI Triage Engine',
     '/vault':         'Evidence Vault',
     '/fir-compiler':  'FIR Compiler',

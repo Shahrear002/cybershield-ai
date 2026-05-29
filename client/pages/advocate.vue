@@ -28,6 +28,31 @@
       </div>
     </div>
 
+    <!-- ── Toast Alert Banner for Chat Auto-Analysis ── -->
+    <div
+      v-if="showSuccessBanner"
+      class="mb-6 animate-slide-up rounded-xl border border-cyber-emerald/30 bg-cyber-emerald/5 px-4 py-3.5 shadow-md"
+    >
+      <div class="flex items-center gap-3">
+        <div class="flex h-7 w-7 items-center justify-center rounded-lg bg-cyber-emerald/10 border border-cyber-emerald/30">
+          <svg class="h-4.5 w-4.5 text-cyber-emerald" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <div class="flex-1">
+          <p class="text-xs text-slate-300 font-medium">
+            ✅ Case Analyzed Successfully from Chat. Please review the details below and click 'Generate FIR PDF' to finalize your document.
+          </p>
+        </div>
+        <button
+          @click="showSuccessBanner = false"
+          class="rounded px-2 py-1 text-xs text-slate-500 hover:bg-surface hover:text-slate-300 transition"
+        >
+          Dismiss
+        </button>
+      </div>
+    </div>
+
     <!-- ══════════════════════════════════════════════════════════════════════
          TWO-COLUMN GRID (stacks on mobile)
          ══════════════════════════════════════════════════════════════════════ -->
@@ -456,16 +481,22 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 useHead({ title: 'AI Triage Engine' })
 
 // ── Runtime config ─────────────────────────────────────────────────────────
 const config = useRuntimeConfig()
 
+const route = useRoute()
+const router = useRouter()
+
 // ── State ──────────────────────────────────────────────────────────────────
-const transcript   = ref('')
+const chatSummary  = useChatSummary()
+const transcript   = ref(chatSummary.value || '')
 const loading      = ref(false)
+const showSuccessBanner = ref(false)
 const apiError     = ref<string | null>(null)
 const copied       = ref(false)
 const firModalOpen = ref(false)
@@ -640,6 +671,26 @@ function riskMetrics(score: number) {
     { label: 'Review SLA',  value: score >= 85 ? 'Immediate' : score >= 65 ? '24 hrs' : score >= 35 ? '48 hrs' : '7 days', color: 'text-slate-400' },
   ]
 }
+
+onMounted(async () => {
+  // If we have an incoming chat summary, inject it into the transcript input area
+  if (chatSummary.value) {
+    transcript.value = chatSummary.value
+  }
+
+  // If auto-analyze is requested, run analysis and clear state/query
+  if (route.query.autoAnalyze === 'true') {
+    if (transcript.value.trim()) {
+      await analyze()
+      if (analysis.value) {
+        showSuccessBanner.value = true
+      }
+    }
+    // Clean up to prevent re-triggering on subsequent page reloads
+    chatSummary.value = ''
+    router.replace({ path: route.path, query: {} })
+  }
+})
 </script>
 
 <style scoped>
