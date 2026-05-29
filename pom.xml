@@ -12,7 +12,7 @@
     <groupId>com.cybershield</groupId>
     <artifactId>cybershield-ai</artifactId>
     <version>0.1.0-SNAPSHOT</version>
-    <packaging>jar</packaging>
+    <packaging>war</packaging>
     <name>CyberShield AI</name>
     <description>
         CyberShield AI — Integrated Digital Rights, Safety and Justice Platform.
@@ -82,6 +82,13 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- Provided Tomcat dependency for WAR packaging -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-tomcat</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <!--
