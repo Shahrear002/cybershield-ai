@@ -268,6 +268,19 @@
               </svg>
               Print Document
             </button>
+
+            <!-- Reset / Start New FIR -->
+            <button
+              id="btn-reset"
+              type="button"
+              class="fir-btn-secondary border-dashed border-red-500/30 hover:border-red-500/60 hover:bg-red-500/5 hover:text-red-400"
+              @click="resetForm"
+            >
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+              Reset Form
+            </button>
           </div>
 
           <!-- ── Error Banners ────────────────────────────────────────────── -->
@@ -732,6 +745,38 @@ async function compileDocument() {
     compileError.value = `Failed to generate FIR: ${msg}`
   } finally {
     isCompiling.value = false
+  }
+}
+
+function resetForm() {
+  // 1. Clear form state
+  language.value = 'EN'
+  policeStation.value = 'CCID Head Office, Dhaka Metropolitan'
+  subject.value = 'Cybercrime Complaint — Unauthorized Access and Extortion'
+  placeOfOffence.value = ''
+  dateOfOffence.value = ''
+  informantName.value = ''
+  informantDetails.value = ''
+  witnesses.value = ''
+  
+  // 2. Clear triageData
+  triageData.transcript = ''
+  triageData.primaryOffenderHandle = ''
+  triageData.evidenceHash = ''
+  triageData.category = ''
+  triageData.legalJustification = ''
+  
+  // 3. Clear UI state
+  savedRecord.value = null
+  compileError.value = null
+  pdfError.value = null
+  
+  // 4. Remove cached item from localStorage
+  try {
+    localStorage.removeItem('cybershield_triage_data')
+    localStorage.removeItem('cybershield_last_evidence_hash')
+  } catch (err) {
+    console.error('Failed to clear localStorage items:', err)
   }
 }
 

@@ -8,10 +8,10 @@ The project features a **decoupled, full-stack architecture** combining a high-p
 
 ## ✨ Features
 
-### 1. 🤖 AI Advocate Chatbot Triage
-* **Interactive Triage**: Guided conversation interface helping victims describe traumatic cyber incidents (blackmail, unauthorized access, harassment) in plain natural language.
-* **Spring AI Engine**: Coordinates with LLMs (e.g., Llama-3.3 via Groq API) using strict structured JSON schemas to classify crimes, extract accused social media handles/phone numbers, assess severity, calculate risk scores, and map violations to corresponding sections of the CSA 2023.
-* **Dynamic Prepopulation**: Incident logs are preserved and automatically forwarded to prepopulate subsequent legal documentation.
+### 1. 🤖 Dual-Pathway Reporting & Guided Chatbot
+* **Guided Victim Chatbot**: An empathetic 13-step conversational wizard that interviews victims, gathering critical context (narrative, channels, offender profiles, threats, and impact) without overwhelming them.
+* **Direct Triage Engine**: A high-efficiency direct pathway allowing users to paste pre-compiled chat histories or narrative transcripts directly for immediate evaluation.
+* **Seamless Bridge Handoff**: Once the chat concludes, it automatically compiles a normalized profile, stores it in the global state, and navigates to the Triage page with an auto-analyze query parameter that immediately executes Spring AI classification.
 
 ### 2. 🔒 Cryptographic Evidence Vault
 * **Tamper-Evident Anchoring**: Memory-efficient streaming hashing subsystem that hashes uploaded files (images, audio, video, chat logs) using **SHA-256** without loading large files into memory heap.
@@ -65,12 +65,12 @@ CyberShield AI uses a fully decoupled architecture connecting the client and the
 
 CyberShield AI is structured into six key architectural components, each managing a distinct phase of the triage, proof securing, and threat mitigation lifecycle.
 
-### 1. 🤖 Digital Victim Advocate Chatbot
-* **Architecture**: A stateful conversational agent built as a client-side Vue/Nuxt interface connecting to the Spring Boot AI orchestration pipeline. It utilizes streaming chat boundaries to keep the conversation responsive and uses custom system prompting to establish a safe, empathetic, and professional persona.
+### 1. 🤖 Digital Victim Advocate & Guided Chatbot
+* **Architecture**: A stateful conversational agent built as a modular Nuxt component (`TriageChatbot.vue`) that manages reactive dialogue steps and secure media uploads, bridging directly into the Spring Boot AI triage pipeline.
 * **Workflow**:
-  1. The victim enters a description of the cybercrime in plain natural language (e.g., chat transcript or incident narrative).
-  2. The chatbot guides the user with context-aware, follow-up questions, simplifying complex legal terms into accessible language.
-  3. Once the interaction completes, the chatbot structures the chat history and passes it directly to the Case Classification Engine.
+  1. The victim responds to context-aware guided prompts (13 steps covering incident dates, offender details, safety concerns, and impact).
+  2. At Step 13, the interface displays an interactive drag-and-drop vault drop-zone. The victim uploads screenshot evidence, which is instantly hashed and anchored via Spring Boot.
+  3. Upon completion, a single-click handoff function (`finalizeChatAndTransfer()`) serializes the report, redirects the user, and auto-fires the Spring AI classification pipeline.
 
 ### 2. 📚 RAG Legal Engine (Retrieval-Augmented Generation)
 * **Architecture**: Combining Spring AI's structured vector loaders with Groq/Llama-3.3 LLM embeddings. It integrates legal resources, procedural guidelines, and Ejahar complaint templates from the **Bangladesh Cyber Security Act 2023** into a searchable index.
@@ -192,9 +192,10 @@ Make sure you have the following installed on your machine:
 
 ## 🛰️ API Endpoint Summary
 
-### Triage & Hashing (`TriageController.java`)
+### Triage, Hashing & Evidence Preserving
 * `POST /api/triage/classify` - Submits raw chatbot narrative transcript as `text/plain` and returns structured incident AI categories and risk labels.
-* `POST /api/evidence/secure` - Receives multipart form-data file uploads and yields mock blockchain anchoring certificates and hashes.
+* `POST /api/evidence/secure` - Receives multipart form-data file uploads and yields mock blockchain anchoring certificates and hashes (local path relative to temporary filesystem).
+* `POST /api/evidence/upload` - Securely uploads and preserves evidence files (PNG, JPEG, PDF, Audio) during chat sessions inside the JVM temporary directory, computing SHA-256 fingerprints and EVM transaction receipts under traversal-protected UUID filenames.
 
 ### Ejahar Compiler (`FIRController.java`)
 * `POST /api/fir/generate` - Builds and persists official Ejahar records, compiling them into a court-ready document in either language.
