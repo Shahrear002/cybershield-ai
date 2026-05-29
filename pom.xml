@@ -277,6 +277,7 @@
          Build Plugins
          ========================================================= -->
     <build>
+        <finalName>cybershield-api</finalName>
         <plugins>
 
             <!--
