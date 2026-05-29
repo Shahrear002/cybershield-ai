@@ -5,10 +5,9 @@ export default defineNuxtConfig({
   // ── Modules ──────────────────────────────────────────────────────────────
   modules: ['@nuxtjs/tailwindcss'],
 
-  // ── Runtime config — API base URL switchable per environment ─────────────
   runtimeConfig: {
     public: {
-      apiBase: 'http://localhost:8080',
+      apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:8080',
     },
   },
 
