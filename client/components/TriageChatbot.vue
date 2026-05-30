@@ -191,7 +191,7 @@ interface Message {
 
 // ── Conversational Intake Questions (14 steps) ──────────────────────────────
 const QUESTIONS = [
-  "Welcome! I am your Digital Victim Advocate. I will guide you through documenting this incident for secure local triage.\n\nFirst, **can you briefly describe what happened?**",
+  "Hi, I’m your Digital Advocate. You’re safe here- all conversations and uploaded evidence are encrypted and protected. How can I help you today?",
   "Thank you. To help us catalog this, which **social media platform or digital channel** did the incident occur on? (e.g. Facebook, Instagram, WhatsApp, Email, or SMS)",
   "Understood. Do you know any **details about the offender**? (e.g. username handle, profile URL, phone number, or email)",
   "Got it. Did the offender make **specific threats or blackmail demands**? (e.g. money demands via bKash, image leaks, or defamation?)",

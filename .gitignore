@@ -48,6 +48,9 @@ client/npm-debug.log*
 client/yarn-debug.log*
 client/yarn-error.log*
 client/.env
+.env
+.env.local
+*.env
 
 # ─────────────────────────────────────────────────────────────────────────────
 # AI / Local Logs / System Specifics

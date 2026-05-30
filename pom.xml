@@ -175,6 +175,13 @@
         -->
 
         <!-- ── Developer Experience ──────────────────────────── -->
+        
+        <!-- me.paulschwarz:spring-dotenv to load environment variables from .env file -->
+        <dependency>
+            <groupId>me.paulschwarz</groupId>
+            <artifactId>spring-dotenv</artifactId>
+            <version>4.0.0</version>
+        </dependency>
 
         <!--
             Lombok: compile-time annotation processor for boilerplate reduction.
