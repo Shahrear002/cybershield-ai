@@ -13,10 +13,10 @@ The project features a **decoupled, full-stack architecture** combining a high-p
 * **Direct Triage Engine**: A high-efficiency direct pathway allowing users to paste pre-compiled chat histories or narrative transcripts directly for immediate evaluation.
 * **Seamless Bridge Handoff**: Once the chat concludes, it automatically compiles a normalized profile, stores it in the global state, and navigates to the Triage page with an auto-analyze query parameter that immediately executes Spring AI classification.
 
-### 2. 🔒 Cryptographic Evidence Vault
-* **Tamper-Evident Anchoring**: Memory-efficient streaming hashing subsystem that hashes uploaded files (images, audio, video, chat logs) using **SHA-256** without loading large files into memory heap.
-* **Mock Blockchain Ledger**: Returns an **EVM-style transaction certificate** (e.g., hash, 66-character transaction ID, and UTC timestamp) validating the integrity of the evidence.
-* **Court Admissibility**: Archiving evidence hashes ensures legal verification and chain-of-custody tracking.
+### 2. 🔒 Cryptographic Evidence Vault (Hybrid Architecture)
+* **Off-Chain MCP Filesystem**: Raw evidence files (images, audio, video, chat logs) are securely stored in a local Model Context Protocol (MCP) Filesystem server, ensuring sensitive victim data remains off-chain and out of cloud LLM ingestion.
+* **On-Chain Blockchain Anchoring**: Memory-efficient streaming hashing subsystem generates a **SHA-256** fingerprint. This is anchored to a Mock Blockchain Ledger, returning an **EVM-style transaction certificate** (e.g., hash, 66-character transaction ID, and UTC timestamp).
+* **Court Admissibility**: The hybrid approach (physical storage + cryptographic anchoring) ensures legal verification and immutable chain-of-custody tracking.
 
 ### 3. 📝 Bilingual FIR / Ejahar Compiler
 * **Official Templates**: Automatically parses raw triage data to draft First Information Reports (FIRs) in **English** (matching Bangladesh Police Form No. 53 Ejahar skeleton) or **Bangla (বাংলা)** (official native prose layout).
@@ -86,13 +86,14 @@ CyberShield AI is structured into six key architectural components, each managin
   2. The LLM parses, identifies, and categorizes the incident into standard classes: **Cyber Harassment, Hacking, Impersonation, Blackmail, Cyberbullying, or Financial Fraud**.
   3. Outputs a normalized JSON payload containing the assigned class, computed risk score (1–100), severity label, primary offender details (handles, platforms), and legal justification notes, immediately updating the user's dashboard view.
 
-### 4. 🔒 Secure Evidence Vault (Blockchain Layer)
-* **Architecture**: A cryptographically secured caching repository integrated on the Spring Boot backend. It utilizes memory-efficient binary stream readers and Java `MessageDigest` APIs to compute file signatures.
+### 4. 🔒 Secure Evidence Vault (MCP + Blockchain Hybrid Layer)
+* **Architecture**: A cryptographically secured hybrid repository. It utilizes the Model Context Protocol (MCP) Filesystem for physical file storage, and memory-efficient binary stream readers with Java `MessageDigest` APIs to compute file signatures for the blockchain.
 * **Workflow**:
   1. Complainant uploads files (screenshots, video evidence, PDF exports, or chat logs) representing the crime proof.
-  2. The backend streams the uploaded binary and generates a unique **SHA-256 fingerprint**.
-  3. The fingerprint is anchored on a simulated blockchain layer, generating an EVM-style transaction certificate containing the evidence hash, a unique transaction hash (`0x...`), and a verified UTC timestamp.
-  4. The certificate is stored on the client as a tamper-proof receipt to be appended directly to the final police Ejahar report.
+  2. The raw file is securely saved to the off-chain **MCP Filesystem** storage.
+  3. The backend streams the uploaded binary and generates a unique **SHA-256 fingerprint**.
+  4. The fingerprint is anchored on a simulated blockchain layer, generating an EVM-style transaction certificate containing the evidence hash, a unique transaction hash (`0x...`), and a verified UTC timestamp.
+  5. The certificate (containing both the MCP File Reference and Blockchain Tx ID) is stored on the client as a tamper-proof receipt to be appended directly to the final police Ejahar report.
 
 ### 5. 📡 Cyber Threat Intelligence System
 * **Architecture**: An analytical backend service that processes anonymized incident data, checking for repeating patterns and entities.
@@ -132,9 +133,10 @@ sequenceDiagram
 
     User->>UI: Uploads screenshots/videos to Evidence Vault
     UI->>API: POST /api/evidence/secure (file stream)
-    API->>API: Computes SHA-256 & generates EVM transaction receipt
-    API-->>UI: Returns Evidence Certificate
-    UI->>UI: Caches secure Hash in localStorage
+    API->>API: Saves to MCP Filesystem & Computes SHA-256
+    API->>API: Generates EVM transaction receipt for the Hash
+    API-->>UI: Returns Hybrid Evidence Certificate (MCP Ref + Tx ID)
+    UI->>UI: Caches secure Hash and Refs in localStorage
 
     User->>UI: Navigation to FIR Compiler (Auto-Prepopulated Forms)
     User->>UI: Toggles Output Language (English / বাংলা) & clicks Compile
@@ -192,10 +194,10 @@ Make sure you have the following installed on your machine:
 
 ## 🛰️ API Endpoint Summary
 
-### Triage, Hashing & Evidence Preserving
+### Triage, Hashing & Evidence Preserving (Hybrid)
 * `POST /api/triage/classify` - Submits raw chatbot narrative transcript as `text/plain` and returns structured incident AI categories and risk labels.
-* `POST /api/evidence/secure` - Receives multipart form-data file uploads and yields mock blockchain anchoring certificates and hashes (local path relative to temporary filesystem).
-* `POST /api/evidence/upload` - Securely uploads and preserves evidence files (PNG, JPEG, PDF, Audio) during chat sessions inside the JVM temporary directory, computing SHA-256 fingerprints and EVM transaction receipts under traversal-protected UUID filenames.
+* `POST /api/evidence/secure` - Receives multipart form-data file uploads. Securely stores the file in the **MCP Filesystem**, and yields mock blockchain anchoring certificates and hashes (local path relative to temporary filesystem).
+* `POST /api/evidence/upload` - Similar secure upload preserving evidence files inside the JVM temporary directory / MCP node, computing SHA-256 fingerprints and EVM transaction receipts under traversal-protected UUID filenames.
 
 ### Ejahar Compiler (`FIRController.java`)
 * `POST /api/fir/generate` - Builds and persists official Ejahar records, compiling them into a court-ready document in either language.

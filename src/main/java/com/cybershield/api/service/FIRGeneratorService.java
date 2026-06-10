@@ -205,11 +205,12 @@ public class FIRGeneratorService {
      * </ol>
      *
      * @param request the validated, normalised FIR form submission
+     * @param user    the authenticated user creating the FIR
      * @return the persisted {@link FIRObject} containing the generated FIR text
      * @throws IllegalArgumentException  if {@code request} or {@code language} is null
      * @throws AiClassificationException if the LLM call fails or returns empty content
      */
-    public FIRObject compileFIR(FIRRequest request) {
+    public FIRObject compileFIR(FIRRequest request, com.cybershield.api.model.User user) {
 
         if (request == null) {
             throw new IllegalArgumentException("compileFIR: FIRRequest must not be null");
@@ -254,7 +255,7 @@ public class FIRGeneratorService {
 
         // ── Step 5: Persist FIRObject ─────────────────────────────────────────
         String    refNumber  = generateReferenceNumber();
-        FIRObject firObject  = FIRObject.from(request, refNumber);
+        FIRObject firObject  = FIRObject.from(request, refNumber, user);
         firObject.setGeneratedContent(cleanedOutput);
 
         FIRObject saved = firRepository.save(firObject);

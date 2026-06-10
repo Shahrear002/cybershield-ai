@@ -27,19 +27,10 @@
           <div class="whitespace-pre-wrap leading-relaxed">
             {{ msg.text }}
           </div>
-
-          <!-- Embedded summary block (Advocate finished state) -->
-          <div v-if="msg.summary" class="mt-3 overflow-hidden rounded-lg border border-border bg-navy-950/80 p-3.5">
-            <div class="mb-2 flex items-center justify-between border-b border-border/60 pb-1.5">
-              <span class="text-[10px] font-bold uppercase tracking-wider text-cyber-cyan">Structured Incident Report</span>
-              <span class="rounded bg-cyber-emerald/10 border border-cyber-emerald/20 px-1 py-0.5 text-[8px] font-semibold uppercase text-cyber-emerald">Ready</span>
-            </div>
-            <pre class="font-mono text-xs text-slate-300 overflow-x-auto leading-relaxed custom-scrollbar whitespace-pre-wrap">{{ msg.summary }}</pre>
-          </div>
         </div>
       </div>
 
-      <!-- File Upload Zone (Step 13) -->
+      <!-- File Upload Zone -->
       <div v-if="showFileUpload" class="flex justify-start animate-fade-in">
         <div class="w-full max-w-[85%] md:max-w-[70%] rounded-xl rounded-tl-none border border-border-bright bg-surface p-4 shadow-md">
           <p class="mb-2.5 text-[9px] font-semibold tracking-wider uppercase text-cyber-cyan">
@@ -104,8 +95,8 @@
     <div class="mt-4 flex-shrink-0 px-4 pb-6 md:px-8">
       
       <!-- Completed state CTA box with handoff -->
-      <div v-if="isCompleted" class="animate-slide-up space-y-3 rounded-xl border border-cyber-cyan/20 bg-cyber-cyan/5 p-4 text-center">
-        <p class="text-sm font-semibold text-slate-200">Incident Details Collected</p>
+      <div v-if="requiresFir" class="animate-slide-up space-y-3 rounded-xl border border-cyber-cyan/20 bg-cyber-cyan/5 p-4 text-center">
+        <p class="text-sm font-semibold text-slate-200">FIR Generation Recommended</p>
         <p class="text-xs text-slate-400">Would you like to hand over this structured report to the AI Triage Engine to classify the offense under the Cyber Security Act 2023 and generate a formal FIR complaint?</p>
         <div class="flex flex-col justify-center gap-3 sm:flex-row">
           <button 
@@ -133,7 +124,7 @@
         <button
           type="button"
           @click="triggerFileInput"
-          :disabled="typing || isCompleted || uploading"
+          :disabled="typing || requiresFir || uploading"
           class="flex items-center justify-center rounded-xl border border-border-bright bg-surface px-4 py-3.5 text-slate-300 transition hover:border-cyber-cyan/50 hover:text-cyber-cyan hover:bg-cyber-cyan/5 disabled:cursor-not-allowed disabled:opacity-40"
           title="Upload Evidence screenshots/files"
         >
@@ -151,12 +142,12 @@
           type="text"
           :placeholder="uploading ? 'Uploading and anchoring evidence...' : showFileUpload ? 'Please upload your evidence or use the paperclip...' : 'Type your response here...'"
           class="flex-1 rounded-xl border border-border bg-navy-900 px-4 py-3.5 text-sm text-slate-200 placeholder-slate-700 transition focus:border-cyber-cyan/50 focus:outline-none focus:ring-1 focus:ring-cyber-cyan/30"
-          :disabled="typing || isCompleted || showFileUpload || uploading"
+          :disabled="typing || requiresFir || showFileUpload || uploading"
           ref="inputField"
         />
         <button
           type="submit"
-          :disabled="!userInput.trim() || typing || isCompleted || showFileUpload || uploading"
+          :disabled="!userInput.trim() || typing || requiresFir || showFileUpload || uploading"
           class="flex items-center justify-center rounded-xl bg-gradient-to-br from-[#0ea5e9] to-[#6366f1] px-5 py-3.5 text-white transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-40"
         >
           <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -186,33 +177,12 @@ const chatSummary = useChatSummary()
 interface Message {
   sender: 'bot' | 'user'
   text: string
-  summary?: string
 }
-
-// ── Conversational Intake Questions (14 steps) ──────────────────────────────
-const QUESTIONS = [
-  "Hi, I’m your Digital Advocate. You’re safe here- all conversations and uploaded evidence are encrypted and protected. How can I help you today?",
-  "Thank you. To help us catalog this, which **social media platform or digital channel** did the incident occur on? (e.g. Facebook, Instagram, WhatsApp, Email, or SMS)",
-  "Understood. Do you know any **details about the offender**? (e.g. username handle, profile URL, phone number, or email)",
-  "Got it. Did the offender make **specific threats or blackmail demands**? (e.g. money demands via bKash, image leaks, or defamation?)",
-  "How has this incident **impacted** you personally or professionally? (e.g. reputational damage, severe mental stress, or safety concerns)",
-  "Have you shared these details with any **family members, friends, or trusted contacts**?",
-  "Are there any **witnesses** who saw the messages or posts, or who can vouch for what happened?",
-  "Has this occurred as a **single isolated event**, or is this a case of **ongoing harassment/stalking**?",
-  "Did the incident occur inside a **private conversation** (DM) or on a **public post/comment section**?",
-  "Approximately **when** did the incident start, and when was the most recent occurrence?",
-  "Have you already made any **formal complaints** (e.g. reporting to the platform or contacting the police)?",
-  "Are you experiencing any **direct threat to your physical safety** or are you concerned about physical retaliation?",
-  "Does the offender have access to any of your **personal devices or online accounts**?",
-  "To establish a legally admissible chain-of-custody, we recommend preserving screenshots or files as locked digital evidence.\n\n**Please upload any screenshots, evidence files, or PDFs below.**",
-  "All details have been structured! We are ready to compile the report."
-]
 
 // ── State variables ──────────────────────────────────────────────────────────
 const userInput = ref('')
-const currentStep = ref(0)
 const typing = ref(false)
-const isCompleted = ref(false)
+const requiresFir = ref(false)
 const messages = reactive<Message[]>([])
 
 // File upload states
@@ -227,14 +197,12 @@ const inputField = ref<HTMLInputElement | null>(null)
 // Session ID for evidence tracking
 const sessionId = ref(`session-${UUID_like()}`)
 
-// ── Answers collection ──────────────────────────────────────────────────────
+// ── Evidence collection ──────────────────────────────────────────────────────
 const answers = reactive({
-  q1: '', q2: '', q3: '', q4: '', q5: '',
-  q6: '', q7: '', q8: '', q9: '', q10: '',
-  q11: '', q12: '', q13: '',
   evidenceHash: 'No evidence attached',
   evidenceTxId: 'N/A',
-  evidenceFile: 'None'
+  evidenceFile: 'None',
+  evidenceMcpRef: ''
 })
 
 // Generate simple unique ID
@@ -256,54 +224,52 @@ async function scrollToBottom() {
 // ── Send text replies ────────────────────────────────────────────────────────
 async function handleSend() {
   const text = userInput.value.trim()
-  if (!text || typing.value || isCompleted.value || showFileUpload.value) return
+  if (!text || typing.value || requiresFir.value || showFileUpload.value) return
 
   // Push user answer
   messages.push({ sender: 'user', text })
   userInput.value = ''
   await scrollToBottom()
 
-  // Save answers dynamically
-  const key = `q${currentStep.value + 1}` as keyof typeof answers
-  if (key in answers) {
-    (answers as any)[key] = text
-  }
-
-  currentStep.value++
   await executeBotResponse()
 }
 
-// ── Bot answers scheduler ────────────────────────────────────────────────────
+// ── AI Bot Chat logic ────────────────────────────────────────────────────────
 async function executeBotResponse() {
   typing.value = true
   await scrollToBottom()
 
-  await new Promise((resolve) => setTimeout(resolve, 800))
-  typing.value = false
+  try {
+    const chatHistory = messages.map(m => ({
+      role: m.sender,
+      content: m.text
+    }))
 
-  // Step 13: Evidence Upload Trigger
-  if (currentStep.value === 13) {
-    showFileUpload.value = true
-    messages.push({
-      sender: 'bot',
-      text: QUESTIONS[13]
+    const response = await $fetch<string>('/api/chat', {
+      baseURL: config.public.apiBase || 'http://localhost:8080',
+      method: 'POST',
+      body: { history: chatHistory }
     })
-  } else if (currentStep.value < QUESTIONS.length - 1) {
-    // Standard questions
-    messages.push({
-      sender: 'bot',
-      text: QUESTIONS[currentStep.value]
-    })
-  } else {
-    // Complete state
-    isCompleted.value = true
-    const compiled = compileSummary()
-    chatSummary.value = compiled
+
+    const parsed = JSON.parse(response)
+    
+    typing.value = false
 
     messages.push({
       sender: 'bot',
-      text: "I have successfully compiled all 13 details and cryptographically preserved your evidence receipts in our ledger. Here is your structured case file:",
-      summary: compiled
+      text: parsed.response_text
+    })
+
+    if (parsed.requires_fir) {
+      // Trigger file upload mode or FIR generation
+      showFileUpload.value = true
+    }
+
+  } catch (err: any) {
+    typing.value = false
+    messages.push({
+      sender: 'bot',
+      text: "Sorry, I am having trouble connecting to the network right now. Please try again."
     })
   }
 
@@ -356,7 +322,8 @@ async function uploadFilePayload(file: File) {
       fileHash: string,
       transactionId: string,
       timestamp: string,
-      message: string
+      message: string,
+      mcpFileRef?: string
     }>('/api/evidence/upload', {
       baseURL: config.public.apiBase || 'http://localhost:8080',
       method: 'POST',
@@ -367,6 +334,7 @@ async function uploadFilePayload(file: File) {
     answers.evidenceFile = response.fileName
     answers.evidenceHash = response.fileHash
     answers.evidenceTxId = response.transactionId
+    answers.evidenceMcpRef = response.mcpFileRef || ''
 
     // Hide upload zone
     showFileUpload.value = false
@@ -385,12 +353,11 @@ async function uploadFilePayload(file: File) {
 
     messages.push({
       sender: 'bot',
-      text: `Evidence received and secured! 🔐\n\n**SHA-256 Hash**: \`${response.fileHash}\`\n**Blockchain Tx ID**: \`${response.transactionId}\`\n**Chain-of-Custody Timestamp**: ${response.timestamp}\n\nYour file has been anchored in the CyberShield digital vault and is fully ready for legal submission.`
+      text: `Evidence received and secured using Hybrid Storage! 🔐\n\n**MCP File Ref**: \`${response.mcpFileRef || 'Pending'}\`\n**Blockchain Tx ID**: \`${response.transactionId}\`\n**SHA-256 Hash**: \`${response.fileHash.substring(0, 16)}...\`\n**Timestamp**: ${response.timestamp}\n\nYour file has been anchored in the CyberShield digital vault and is fully ready for legal submission.`
     })
 
-    // Proceed to final review step
-    currentStep.value++
-    await executeBotResponse()
+    // Activate the final FIR handoff CTA
+    requiresFir.value = true
 
   } catch (err: any) {
     uploading.value = false
@@ -407,40 +374,14 @@ async function skipEvidence() {
   })
   await scrollToBottom()
 
-  currentStep.value++
-  await executeBotResponse()
-}
-
-// ── Compile Summary ──────────────────────────────────────────────────────────
-function compileSummary(): string {
-  return `On social platform ${answers.q2 || 'unspecified'}, the offender ${answers.q3 || 'unknown'} targeted the informant.
-
-Incident Details:
-- Narrative: ${answers.q1}
-- Specific Threats: ${answers.q4}
-- Personal Impact: ${answers.q5}
-- Ongoing Harassment?: ${answers.q8}
-- DM or Public?: ${answers.q9}
-- Date range: ${answers.q10}
-
-Witnesses & Backing Info:
-- Shared with others?: ${answers.q6}
-- Witnesses present?: ${answers.q7}
-- Platform complaint filed?: ${answers.q11}
-- Physical threat concerns?: ${answers.q12}
-- Offender has device access?: ${answers.q13}
-
-Cryptographic Chain of Custody Proofs:
-- Evidence File name: ${answers.evidenceFile}
-- SHA-256 Proof Checksum: ${answers.evidenceHash}
-- Blockchain Anchor Tx ID: ${answers.evidenceTxId}
-`
+  requiresFir.value = true
 }
 
 // ── Handoff to Triage Page ───────────────────────────────────────────────────
 function finalizeChatAndTransfer() {
-  const compiledText = compileSummary()
-  chatSummary.value = compiledText
+  // Combine chat history for AI to process
+  const summary = messages.map(m => `${m.sender}: ${m.text}`).join('\n')
+  chatSummary.value = summary + `\n\nEvidence File: ${answers.evidenceFile}\nEvidence Hash: ${answers.evidenceHash}\nMCP Ref: ${answers.evidenceMcpRef}\nBlockchain Tx: ${answers.evidenceTxId}`
   
   navigateTo({
     path: '/advocate',
@@ -450,24 +391,20 @@ function finalizeChatAndTransfer() {
 
 // ── Reset Chat ──────────────────────────────────────────────────────────────
 function resetChat() {
-  currentStep.value = 0
-  isCompleted.value = false
+  requiresFir.value = false
   chatSummary.value = ''
   showFileUpload.value = false
   uploading.value = false
   messages.length = 0
   
-  // Clear answers
-  Object.keys(answers).forEach((k) => {
-    (answers as any)[k] = ''
-  })
   answers.evidenceHash = 'No evidence attached'
   answers.evidenceTxId = 'N/A'
   answers.evidenceFile = 'None'
+  answers.evidenceMcpRef = ''
 
   messages.push({
     sender: 'bot',
-    text: QUESTIONS[0]
+    text: "Hi, I’m your Digital Advocate. You’re safe here - all conversations and uploaded evidence are encrypted and protected. How can I help you today?"
   })
 
   scrollToBottom()

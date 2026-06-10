@@ -52,6 +52,14 @@ public interface FIRRepository extends JpaRepository<FIRObject, Long> {
     List<FIRObject> findByStatusOrderByCreatedAtDesc(String status);
 
     /**
+     * Returns all FIR records created by the specified user.
+     *
+     * @param userId the ID of the user
+     * @return an ordered list (newest first) of matching records
+     */
+    List<FIRObject> findByUser_IdOrderByCreatedAtDesc(Long userId);
+
+    /**
      * Returns all FIR records NOT yet submitted to police — i.e., where
      * {@code status = 'PENDING_SUBMISSION'}.
      *

@@ -3,6 +3,8 @@ package com.cybershield.api;
 import com.cybershield.api.model.FIRObject;
 import com.cybershield.api.model.FIRRepository;
 import com.cybershield.api.model.FIRRequest;
+import com.cybershield.api.model.User;
+import com.cybershield.api.model.UserRepository;
 import com.cybershield.api.service.FIRGeneratorService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -13,6 +15,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import java.util.List;
 import java.util.Map;
 
@@ -50,17 +54,21 @@ public class FIRController {
 
     private final FIRGeneratorService firGeneratorService;
     private final FIRRepository       firRepository;
+    private final UserRepository      userRepository;
 
     /**
      * Constructor injection — preferred over {@code @Autowired} field injection.
      *
      * @param firGeneratorService Spring AI–backed FIR compilation service
      * @param firRepository       JPA repository for retrieval and status updates
+     * @param userRepository      JPA repository for User lookup
      */
     public FIRController(FIRGeneratorService firGeneratorService,
-                         FIRRepository       firRepository) {
+                         FIRRepository       firRepository,
+                         UserRepository      userRepository) {
         this.firGeneratorService = firGeneratorService;
         this.firRepository       = firRepository;
+        this.userRepository      = userRepository;
     }
 
     // ── POST /api/fir/generate ────────────────────────────────────────────────
@@ -103,13 +111,18 @@ public class FIRController {
             value    = "/generate",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<FIRObject> generate(@Valid @RequestBody FIRRequest request) {
+    public ResponseEntity<FIRObject> generate(
+            @Valid @RequestBody FIRRequest request,
+            @AuthenticationPrincipal UserDetails userDetails) {
 
         log.info("FIR generation request received — language={} informant='{}'",
                 request.language(), request.informantName());
 
+        User user = userRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
+
         try {
-            FIRObject saved = firGeneratorService.compileFIR(request);
+            FIRObject saved = firGeneratorService.compileFIR(request, user);
             log.info("FIR generated and persisted — id={} refNumber='{}'",
                     saved.getId(), saved.getFirReferenceNumber());
             return ResponseEntity.status(HttpStatus.CREATED).body(saved);
@@ -185,14 +198,24 @@ public class FIRController {
 
     /**
      * Returns all FIR records ordered newest-first.
-     * Intended for the admin dashboard table view.
+     * Intended for the admin dashboard table view. If the user is a VICTIM,
+     * it returns only their own FIRs.
      *
-     * @return {@code 200 OK} with all stored FIRs
+     * @return {@code 200 OK} with stored FIRs
      */
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<FIRObject>> getAll() {
-        List<FIRObject> all = firRepository.findAll();
-        log.info("FIR list requested — {} total records", all.size());
+    public ResponseEntity<List<FIRObject>> getAll(@AuthenticationPrincipal UserDetails userDetails) {
+        User user = userRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
+
+        List<FIRObject> all;
+        if (user.getRole() == User.Role.ROLE_ADMIN) {
+            all = firRepository.findAll();
+        } else {
+            all = firRepository.findByUser_IdOrderByCreatedAtDesc(user.getId());
+        }
+        
+        log.info("FIR list requested — {} total records for user {}", all.size(), user.getUsername());
         return ResponseEntity.ok(all);
     }
 

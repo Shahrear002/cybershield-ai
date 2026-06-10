@@ -14,8 +14,8 @@
           </svg>
         </div>
         <div>
-          <h1 class="text-xl font-bold tracking-tight text-slate-100">Evidence Vault</h1>
-          <p class="text-sm text-slate-500">SHA-256 Cryptographic Anchoring · Blockchain Ledger</p>
+          <h1 class="text-xl font-bold tracking-tight text-slate-100">Evidence Vault (Hybrid Storage)</h1>
+          <p class="text-sm text-slate-500">MCP Filesystem Storage · Blockchain Cryptographic Anchoring</p>
         </div>
         <div class="ml-auto flex items-center gap-2 rounded-full border border-cyber-indigo/20 bg-cyber-indigo/5 px-3 py-1.5">
           <svg class="h-3 w-3 text-cyber-indigo" fill="currentColor" viewBox="0 0 20 20">
@@ -124,14 +124,14 @@
               <path class="opacity-75" fill="currentColor"
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
             </svg>
-            <span>Hashing &amp; Anchoring to Ledger…</span>
+            <span>Saving to MCP & Anchoring to Ledger…</span>
           </template>
           <template v-else>
             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round"
                 d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
-            <span>Secure to Blockchain Ledger</span>
+            <span>Secure to MCP & Blockchain Ledger</span>
           </template>
         </button>
 
@@ -280,6 +280,19 @@
                 </p>
               </div>
 
+              <!-- MCP File Reference -->
+              <div v-if="certificate.mcpFileRef" class="rounded-lg border bg-navy-800 px-4 py-3.5" style="border-color: rgba(56,189,248,0.25);">
+                <div class="mb-2 flex items-center gap-2">
+                  <svg class="h-3.5 w-3.5 text-sky-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 8.006c-.194.027-.392.05-.59.072m-.59-.072a52.14 52.14 0 00-3.265 0m0 0a1.5 1.5 0 01-1.08-.585l-1.08-1.584a1.5 1.5 0 00-1.08-.585h-6c-.44 0-.84.212-1.08.585l-1.08 1.584a1.5 1.5 0 01-1.08.585m3.265 0a52.14 52.14 0 00-3.265 0M16.5 14.15V8.662m0 0l-3.21-3.21m3.21 3.21L13.29 5.452M16.5 8.662V8.706" />
+                  </svg>
+                  <p class="text-[10px] font-semibold uppercase tracking-widest text-sky-400">MCP File Reference</p>
+                </div>
+                <p class="break-all font-mono text-xs leading-relaxed text-sky-400/80">
+                  {{ certificate.mcpFileRef }}
+                </p>
+              </div>
+
               <!-- Timestamp + short hashes -->
               <div class="grid grid-cols-2 gap-3">
                 <div class="rounded-lg border border-border bg-navy-800 px-4 py-3">
@@ -297,10 +310,10 @@
             <!-- Certification statement -->
             <div class="mt-5 rounded-lg border border-border bg-navy-900 px-4 py-3">
               <p class="font-mono text-[10px] leading-relaxed text-slate-600">
-                This certificate attests that the above digital evidence file was cryptographically
-                hashed using the SHA-256 algorithm and its fingerprint was anchored to the CyberShield
-                AI secure ledger at the timestamp stated herein. Any subsequent modification to the
-                file will produce a different hash, making tampering immediately detectable.
+                This certificate attests that the above digital evidence file was securely stored off-chain
+                in the MCP Filesystem, cryptographically hashed using the SHA-256 algorithm, and its fingerprint
+                was anchored to the CyberShield AI secure ledger at the timestamp stated herein. Any subsequent
+                modification to the file will produce a different hash, making tampering immediately detectable.
                 Issued under the Bangladesh Cyber Security Act 2023, Section 24.
               </p>
             </div>
@@ -357,6 +370,7 @@ interface EvidenceCertificate {
   fileHash:      string
   transactionId: string
   timestamp:     string
+  mcpFileRef?:   string
 }
 
 const certificate = ref<EvidenceCertificate | null>(null)
@@ -364,8 +378,9 @@ const certificate = ref<EvidenceCertificate | null>(null)
 // ── How it works steps ─────────────────────────────────────────────────────
 const HOW_IT_WORKS = [
   { n: '1', title: 'Upload File',   desc: 'Any evidence file' },
-  { n: '2', title: 'SHA-256 Hash',  desc: 'Cryptographic fingerprint' },
-  { n: '3', title: 'Anchor Ledger', desc: 'Blockchain receipt' },
+  { n: '2', title: 'MCP Storage',   desc: 'Secure off-chain storage' },
+  { n: '3', title: 'SHA-256 Hash',  desc: 'Cryptographic fingerprint' },
+  { n: '4', title: 'Anchor Ledger', desc: 'Blockchain receipt' },
 ]
 
 // ── Certificate number (short hash of timestamp) ───────────────────────────

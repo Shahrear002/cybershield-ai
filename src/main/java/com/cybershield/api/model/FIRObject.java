@@ -167,6 +167,15 @@ public class FIRObject {
     @Column(name = "generated_content", columnDefinition = "TEXT")
     private String generatedContent;
 
+    // ── User ─────────────────────────────────────────────────────────────────
+
+    /**
+     * The victim or admin user who created this FIR.
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
     // ── JPA lifecycle callbacks ──────────────────────────────────────────────
 
     /**
@@ -205,9 +214,10 @@ public class FIRObject {
      *
      * @param req          the validated incoming form data
      * @param refNumber    unique FIR reference number (e.g., "CCID-CSA-2025-4821")
+     * @param user         the authenticated user creating the FIR
      * @return a populated, transient FIRObject ready for persistence
      */
-    public static FIRObject from(FIRRequest req, String refNumber) {
+    public static FIRObject from(FIRRequest req, String refNumber, User user) {
         FIRObject fir             = new FIRObject();
         fir.language              = req.language();
         fir.policeStation         = req.policeStation();
@@ -221,6 +231,7 @@ public class FIRObject {
         fir.witnesses             = req.witnesses();
         fir.firReferenceNumber    = refNumber;
         fir.status                = "PENDING_SUBMISSION";
+        fir.user                  = user;
         return fir;
     }
 
@@ -242,6 +253,7 @@ public class FIRObject {
     public String        getWitnesses()             { return witnesses; }
     public String        getFirReferenceNumber()    { return firReferenceNumber; }
     public String        getGeneratedContent()      { return generatedContent; }
+    public User          getUser()                  { return user; }
 
     // ── Mutators (only for mutable lifecycle fields) ─────────────────────────
 
