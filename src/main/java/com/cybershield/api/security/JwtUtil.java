@@ -16,7 +16,8 @@ import java.util.function.Function;
 @Component
 public class JwtUtil {
 
-    private final SecretKey SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    private final String SECRET_STRING = "cybershield-hackathon-super-secret-key-2026-very-long-string-for-hs256";
+    private final SecretKey SECRET_KEY = Keys.hmacShaKeyFor(SECRET_STRING.getBytes(java.nio.charset.StandardCharsets.UTF_8));
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
