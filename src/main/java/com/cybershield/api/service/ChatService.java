@@ -59,23 +59,94 @@ public class ChatService {
                     .messages(messages)
                     .call()
                     .content();
+
+            rawOutput = rawOutput.trim();
+
+            int start = rawOutput.indexOf('{');
+            int end = rawOutput.lastIndexOf('}');
             
-            // Clean markdown fences if any
-            if (rawOutput != null && rawOutput.trim().startsWith("```json")) {
-                rawOutput = rawOutput.substring(rawOutput.indexOf('\n') + 1);
-                if (rawOutput.endsWith("```")) {
-                    rawOutput = rawOutput.substring(0, rawOutput.length() - 3);
-                }
-            } else if (rawOutput != null && rawOutput.trim().startsWith("```")) {
-                rawOutput = rawOutput.substring(rawOutput.indexOf('\n') + 1);
-                if (rawOutput.endsWith("```")) {
-                    rawOutput = rawOutput.substring(0, rawOutput.length() - 3);
-                }
+            String finalJson = rawOutput;
+            if (start != -1 && end != -1 && start <= end) {
+                finalJson = rawOutput.substring(start, end + 1);
+            } else {
+                // Fallback: Model did not return JSON. Wrap the plain text in our expected JSON
+                // structure.
+                java.util.Map<String, Object> fallback = java.util.Map.of(
+                        "response_text", rawOutput,
+                        "requires_fir", false);
+                finalJson = new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(fallback);
             }
-            return rawOutput.trim();
+
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            com.fasterxml.jackson.databind.JsonNode rootNode = mapper.readTree(finalJson);
+
+            if (rootNode.has("requires_fir") && rootNode.get("requires_fir").asBoolean()) {
+                log.info("requires_fir is true, calling generateFIRSummary...");
+                String summaryJsonStr = generateFIRSummary(messages);
+                log.info("generateFIRSummary returned: " + summaryJsonStr);
+                com.fasterxml.jackson.databind.JsonNode summaryNode = mapper.readTree(summaryJsonStr);
+
+                if (rootNode instanceof com.fasterxml.jackson.databind.node.ObjectNode objectNode) {
+                    if (summaryNode.has("summaryEn")) {
+                        objectNode.put("summaryEn", summaryNode.get("summaryEn").asText());
+                    }
+                    if (summaryNode.has("summaryBn")) {
+                        objectNode.put("summaryBn", summaryNode.get("summaryBn").asText());
+                    }
+                }
+                return mapper.writeValueAsString(rootNode);
+            }
+
+            return finalJson;
         } catch (Exception e) {
             log.error("AI Chat failed", e);
             throw new RuntimeException("AI Chat failed: " + e.getMessage());
         }
+    }
+
+    private String generateFIRSummary(List<Message> chatHistory) {
+        String transcript = chatHistory.stream()
+                .filter(m -> m instanceof UserMessage || m instanceof AssistantMessage)
+                .map(m -> (m instanceof UserMessage ? "User: " : "Bot: ") + m.getContent())
+                .collect(Collectors.joining("\n"));
+
+        String summarizationPrompt = """
+                You are a legal assistant drafting a formal First Information Report (FIR). Read the provided chat transcript. Output a strict JSON object with two keys: `summaryEn` and `summaryBn`.
+                1. `summaryEn`: A concise, formal, first-person narrative in English detailing the facts of the crime. Do not include dialogue or system messages. Only include the date, platform, offender identity, and specific actions taken against the victim.
+                2. `summaryBn`: A highly accurate, formal, professional Bengali translation of that exact narrative, suitable for a local police 'এজাহার' (Ejahar).
+                
+                You MUST output a valid JSON object in this exact format, with no markdown fences, no backticks, just the raw JSON string:
+                {
+                  "summaryEn": "...",
+                  "summaryBn": "..."
+                }
+                """;
+
+        try {
+            List<Message> summaryMessages = List.of(
+                new SystemMessage(summarizationPrompt),
+                new UserMessage("Here is the transcript:\n" + transcript)
+            );
+
+            String rawOutput = chatClient.prompt()
+                    .messages(summaryMessages)
+                    .call()
+                    .content();
+            
+            rawOutput = rawOutput.trim();
+            log.info("FIR Summary Raw LLM Output: " + rawOutput);
+            int start = rawOutput.indexOf('{');
+            int end = rawOutput.lastIndexOf('}');
+            if (start != -1 && end != -1 && start <= end) {
+                String extracted = rawOutput.substring(start, end + 1);
+                log.info("Extracted FIR Summary JSON: " + extracted);
+                return extracted;
+            } else {
+                log.error("Could not find JSON in FIR Summary output.");
+            }
+        } catch (Exception e) {
+            log.error("Failed to generate FIR summary", e);
+        }
+        return "{}";
     }
 }

@@ -8,5 +8,6 @@ public record EvidenceReceipt(
         String fileHash,
         String transactionId,
         String timestamp,
-        String message
+        String message,
+        String mcpFileRef
 ) {}

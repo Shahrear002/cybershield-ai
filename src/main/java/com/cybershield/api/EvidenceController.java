@@ -109,12 +109,15 @@ public class EvidenceController {
             log.info("Evidence anchored successfully — hash={} txnId={} savedAs={}", 
                     fileHash, transactionId, randomizedFilename);
 
+            String mcpFileRef = "mcp://vault/" + randomizedFilename;
+
             EvidenceReceipt receipt = new EvidenceReceipt(
                     originalFilename,
                     fileHash,
                     transactionId,
                     timestamp,
-                    "Evidence securely preserved and time-stamped."
+                    "Evidence securely preserved and time-stamped.",
+                    mcpFileRef
             );
 
             return ResponseEntity.ok(receipt);

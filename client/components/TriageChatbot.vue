@@ -184,6 +184,7 @@ const userInput = ref('')
 const typing = ref(false)
 const requiresFir = ref(false)
 const messages = reactive<Message[]>([])
+const aiSummaryData = ref({ en: '', bn: '' })
 
 // File upload states
 const showFileUpload = ref(false)
@@ -245,13 +246,14 @@ async function executeBotResponse() {
       content: m.text
     }))
 
-    const response = await $fetch<string>('/api/chat', {
-      baseURL: config.public.apiBase || 'http://localhost:8080',
+    const baseUrl = config.public.apiBase || 'http://localhost:8080'
+    const url = baseUrl.replace(/\/$/, '') + '/api/chat'
+    const response = await $fetch<any>(url, {
       method: 'POST',
       body: { history: chatHistory }
     })
 
-    const parsed = JSON.parse(response)
+    const parsed = typeof response === 'string' ? JSON.parse(response) : response
     
     typing.value = false
 
@@ -263,6 +265,13 @@ async function executeBotResponse() {
     if (parsed.requires_fir) {
       // Trigger file upload mode or FIR generation
       showFileUpload.value = true
+      
+      if (parsed.summaryEn && parsed.summaryBn) {
+        aiSummaryData.value = {
+          en: parsed.summaryEn,
+          bn: parsed.summaryBn
+        }
+      }
     }
 
   } catch (err: any) {
@@ -317,6 +326,8 @@ async function uploadFilePayload(file: File) {
   formData.append('sessionId', sessionId.value)
 
   try {
+    const baseUrl = config.public.apiBase || 'http://localhost:8080'
+    const url = baseUrl.replace(/\/$/, '') + '/api/evidence/upload'
     const response = await $fetch<{
       fileName: string,
       fileHash: string,
@@ -324,8 +335,7 @@ async function uploadFilePayload(file: File) {
       timestamp: string,
       message: string,
       mcpFileRef?: string
-    }>('/api/evidence/upload', {
-      baseURL: config.public.apiBase || 'http://localhost:8080',
+    }>(url, {
       method: 'POST',
       body: formData
     })
@@ -383,6 +393,12 @@ function finalizeChatAndTransfer() {
   const summary = messages.map(m => `${m.sender}: ${m.text}`).join('\n')
   chatSummary.value = summary + `\n\nEvidence File: ${answers.evidenceFile}\nEvidence Hash: ${answers.evidenceHash}\nMCP Ref: ${answers.evidenceMcpRef}\nBlockchain Tx: ${answers.evidenceTxId}`
   
+  // Save LLM summaries if generated
+  if (aiSummaryData.value.en && aiSummaryData.value.bn) {
+    localStorage.setItem('cybershield_summary_en', aiSummaryData.value.en)
+    localStorage.setItem('cybershield_summary_bn', aiSummaryData.value.bn)
+  }
+
   navigateTo({
     path: '/advocate',
     query: { autoAnalyze: 'true' }

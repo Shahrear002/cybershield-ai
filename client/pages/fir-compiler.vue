@@ -427,7 +427,7 @@
                       বাংলাদেশ সাইবার নিরাপত্তা আইন ২০২৩ এর অধীনে নিম্নলিখিত সাইবার অপরাধের অভিযোগ দায়ের করছি:
                     </p>
                     <p class="whitespace-pre-wrap italic bg-slate-50 p-2.5 rounded text-slate-600 border border-slate-100">
-                      {{ triageData.transcript || '[ভিকটিমের বিবরণ এখানে দেখানো হবে। AI ট্রায়াজ পেজ থেকে ট্রানস্ক্রিপ্ট পেস্ট করুন।]' }}
+                      {{ narrativeText }}
                     </p>
                   </template>
                   <template v-else>
@@ -438,7 +438,7 @@
                       under the Bangladesh Cyber Security Act 2023:
                     </p>
                     <p class="whitespace-pre-wrap italic bg-slate-50 p-2.5 rounded text-slate-600 border border-slate-100">
-                      {{ triageData.transcript || '[Victim transcript will appear here. Paste raw transcript from the AI Triage page.]' }}
+                      {{ narrativeText }}
                     </p>
                   </template>
                 </div>
@@ -603,7 +603,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 
 // ── Page meta ─────────────────────────────────────────────────────────────────
 useHead({
@@ -678,6 +678,20 @@ const docRefNumber = computed(() => {
   return `CCID-CSA-${year}-${serial}`
 })
 
+const narrativeText = ref('')
+
+const updateNarrative = () => {
+  if (activeLanguage.value === 'EN') {
+    narrativeText.value = localStorage.getItem('cybershield_summary_en') || 'English summary generation pending...'
+  } else {
+    narrativeText.value = localStorage.getItem('cybershield_summary_bn') || 'বাংলা সারসংক্ষেপ জেনারেশন পেন্ডিং...'
+  }
+}
+
+watch(activeLanguage, () => {
+  updateNarrative()
+})
+
 // ── Clock Ticker & LocalStorage Retrieval ──────────────────────────────────────
 let _clockInterval: ReturnType<typeof setInterval>
 
@@ -712,6 +726,9 @@ onMounted(() => {
   } catch (err) {
     console.error('Failed to retrieve cybershield_last_evidence_hash from localStorage:', err)
   }
+
+  // 3. Initialize narrative
+  updateNarrative()
 })
 
 // ── Backend Spring AI Integration ─────────────────────────────────────────────
