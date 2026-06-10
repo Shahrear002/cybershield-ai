@@ -173,7 +173,7 @@ public class FIRObject {
      * The victim or admin user who created this FIR.
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id")
     private User user;
 
     // ── JPA lifecycle callbacks ──────────────────────────────────────────────

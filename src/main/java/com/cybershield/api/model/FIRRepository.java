@@ -39,6 +39,11 @@ import java.util.Optional;
 public interface FIRRepository extends JpaRepository<FIRObject, Long> {
 
     // ── Status-based queries ─────────────────────────────────────────────────
+    
+    /**
+     * Returns the 50 most recent FIR records.
+     */
+    List<FIRObject> findTop50ByOrderByCreatedAtDesc();
 
     /**
      * Returns all FIR records matching the given status string.

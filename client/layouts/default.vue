@@ -73,16 +73,31 @@
           </span>
         </div>
 
-        <div class="mt-3 flex items-center gap-2.5 px-1">
-          <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-surface-raised ring-1 ring-border-bright">
-            <svg class="h-3.5 w-3.5 text-slate-400" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+        <!-- Dynamic User Auth Section -->
+        <div v-if="isLoggedIn" class="mt-3 flex items-center justify-between px-1">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-surface-raised ring-1 ring-border-bright">
+              <svg class="h-3.5 w-3.5 text-slate-400" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+              </svg>
+            </div>
+            <div class="min-w-0 pr-2">
+              <p class="truncate text-xs font-medium text-slate-300">{{ isAdmin ? 'Administrator' : 'User' }}</p>
+              <p class="truncate text-[10px] text-slate-600">{{ username || 'admin@cybershield.ai' }}</p>
+            </div>
+          </div>
+          <button @click="logout" class="text-xs text-red-500 hover:text-red-400 p-1 flex-shrink-0" title="Logout">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+          </button>
+        </div>
+        
+        <div v-else class="mt-3 px-1">
+          <NuxtLink to="/login" class="flex items-center justify-center gap-2 w-full py-1.5 rounded bg-surface-raised hover:bg-surface border border-border transition-colors group">
+            <svg class="w-4 h-4 text-emerald-500 group-hover:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
             </svg>
-          </div>
-          <div class="min-w-0">
-            <p class="truncate text-xs font-medium text-slate-300">Advocate</p>
-            <p class="truncate text-[10px] text-slate-600">admin@cybershield.ai</p>
-          </div>
+            <span class="text-xs font-medium text-slate-300 group-hover:text-white transition-colors">Admin Login</span>
+          </NuxtLink>
         </div>
       </div>
     </aside>
@@ -125,6 +140,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
+const { isLoggedIn, isAdmin, username, logout } = useAuth()
 
 // ── Current time (updated every second) ────────────────────────────────────
 const time = ref('')

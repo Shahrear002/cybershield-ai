@@ -43,8 +43,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/triage/**").permitAll()
                 .requestMatchers("/api/evidence/**").permitAll()
                 .requestMatchers("/api/chat/**").permitAll() // Chatbot doesn't require login
-                .requestMatchers("/api/fir/generate").hasAnyRole("VICTIM", "ADMIN")
-                .requestMatchers("/api/fir/pending", "/api/fir").hasRole("ADMIN")
+                .requestMatchers("/api/fir/generate").permitAll()
+                .requestMatchers("/api/fir/pending", "/api/fir", "/api/fir/analytics").hasRole("ADMIN")
                 .requestMatchers("/h2-console/**").permitAll()
                 .anyRequest().authenticated()
             )

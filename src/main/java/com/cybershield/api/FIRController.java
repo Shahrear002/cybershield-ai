@@ -5,6 +5,7 @@ import com.cybershield.api.model.FIRRepository;
 import com.cybershield.api.model.FIRRequest;
 import com.cybershield.api.model.User;
 import com.cybershield.api.model.UserRepository;
+import com.cybershield.api.service.AnalyticsService;
 import com.cybershield.api.service.FIRGeneratorService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -55,6 +56,7 @@ public class FIRController {
     private final FIRGeneratorService firGeneratorService;
     private final FIRRepository       firRepository;
     private final UserRepository      userRepository;
+    private final AnalyticsService    analyticsService;
 
     /**
      * Constructor injection — preferred over {@code @Autowired} field injection.
@@ -65,10 +67,12 @@ public class FIRController {
      */
     public FIRController(FIRGeneratorService firGeneratorService,
                          FIRRepository       firRepository,
-                         UserRepository      userRepository) {
+                         UserRepository      userRepository,
+                         AnalyticsService    analyticsService) {
         this.firGeneratorService = firGeneratorService;
         this.firRepository       = firRepository;
         this.userRepository      = userRepository;
+        this.analyticsService    = analyticsService;
     }
 
     // ── POST /api/fir/generate ────────────────────────────────────────────────
@@ -118,8 +122,11 @@ public class FIRController {
         log.info("FIR generation request received — language={} informant='{}'",
                 request.language(), request.informantName());
 
-        User user = userRepository.findByUsername(userDetails.getUsername())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
+        User user = null;
+        if (userDetails != null) {
+            user = userRepository.findByUsername(userDetails.getUsername())
+                    .orElse(null);
+        }
 
         try {
             FIRObject saved = firGeneratorService.compileFIR(request, user);
@@ -272,5 +279,23 @@ public class FIRController {
                 updated.getId(), updated.getFirReferenceNumber(), previous, newStatus.toUpperCase());
 
         return ResponseEntity.ok(updated);
+    }
+    
+    // ── GET /api/fir/analytics ───────────────────────────────────────────────
+
+    /**
+     * Retrieves threat intelligence analytics directly from the LLM.
+     * Uses semantic deduplication on recent FIRs.
+     */
+    @GetMapping(value = "/analytics", produces = "application/json")
+    public ResponseEntity<String> getAnalytics() {
+        log.info("Fetching FIR analytics via AnalyticsService...");
+        try {
+            String analyticsJson = analyticsService.generateAnalytics();
+            return ResponseEntity.ok(analyticsJson);
+        } catch (Exception e) {
+            log.error("Failed to generate analytics", e);
+            return ResponseEntity.internalServerError().body("{\"error\": \"Failed to generate analytics\"}");
+        }
     }
 }
