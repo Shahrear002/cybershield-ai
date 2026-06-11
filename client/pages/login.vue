@@ -90,13 +90,15 @@ const errorMsg = ref('')
 const { login } = useAuth()
 const router = useRouter()
 const route = useRoute()
+const config = useRuntimeConfig()
 
 const handleSubmit = async () => {
   loading.value = true
   errorMsg.value = ''
 
   try {
-    const response: any = await $fetch('http://localhost:8080/api/auth/login', {
+    const baseUrl = config.public.apiBase || 'http://localhost:8080'
+    const response: any = await $fetch(`${baseUrl}/api/auth/login`, {
       method: 'POST',
       body: {
         username: username.value,

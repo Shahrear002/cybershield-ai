@@ -120,12 +120,12 @@
               </div>
               <div class="grid grid-cols-2 gap-2">
                 <div>
-                  <label class="fir-field-label" for="fir-place">Place of Offence</label>
-                  <input id="fir-place" v-model="placeOfOffence" type="text" class="fir-input" placeholder="e.g. Facebook Messenger" />
+                  <label class="fir-field-label" for="fir-place">Place of Offence <span class="text-red-400">*</span></label>
+                  <input id="fir-place" v-model="placeOfOffence" type="text" class="fir-input" placeholder="e.g. Facebook Messenger" required />
                 </div>
                 <div>
-                  <label class="fir-field-label" for="fir-date">Date of Offence</label>
-                  <input id="fir-date" v-model="dateOfOffence" type="text" class="fir-input" placeholder="15 May 2025" />
+                  <label class="fir-field-label" for="fir-date">Date of Offence <span class="text-red-400">*</span></label>
+                  <input id="fir-date" v-model="dateOfOffence" type="text" class="fir-input" placeholder="15 May 2025" required />
                 </div>
               </div>
             </div>
@@ -141,8 +141,8 @@
             </label>
             <div class="mt-2 flex flex-col gap-3">
               <div>
-                <label class="fir-field-label" for="fir-name">Full Legal Name</label>
-                <input id="fir-name" v-model="informantName" type="text" class="fir-input" placeholder="e.g. Nusrat Jahan" />
+                <label class="fir-field-label" for="fir-name">Full Legal Name <span class="text-red-400">*</span></label>
+                <input id="fir-name" v-model="informantName" type="text" class="fir-input" placeholder="e.g. Nusrat Jahan" required />
               </div>
               <div>
                 <label class="fir-field-label" for="fir-details">Parent / Spouse / Address Details</label>
@@ -735,6 +735,12 @@ onMounted(() => {
 async function compileDocument() {
   isCompiling.value = true
   compileError.value = null
+
+  if (!placeOfOffence.value.trim() || !dateOfOffence.value.trim() || !informantName.value.trim()) {
+    compileError.value = 'Please fill out all required fields: Place of Offence, Date of Offence, and Full Legal Name.'
+    isCompiling.value = false
+    return
+  }
 
   try {
     const payload = {

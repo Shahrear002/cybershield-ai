@@ -25,11 +25,12 @@ export const useAuth = () => {
     username.value = userName
   }
 
+  const router = useRouter()
+
   const logout = () => {
     token.value = null
     role.value = null
     username.value = null
-    const router = useRouter()
     router.push('/login')
   }
 
