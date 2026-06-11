@@ -1,11 +1,19 @@
 <template>
   <div class="flex h-screen overflow-hidden bg-navy-900">
 
+    <!-- Mobile Overlay -->
+    <div
+      v-if="isMobileMenuOpen"
+      @click="isMobileMenuOpen = false"
+      class="fixed inset-0 z-30 bg-black/50 backdrop-blur-sm lg:hidden"
+    ></div>
+
     <!-- ══════════════════════════════════════════════════════════════════════
          STICKY LEFT SIDEBAR
          ══════════════════════════════════════════════════════════════════════ -->
     <aside
-      class="relative flex w-64 flex-shrink-0 flex-col border-r border-border"
+      class="absolute inset-y-0 left-0 z-40 flex w-64 flex-shrink-0 flex-col border-r border-border transition-transform duration-300 lg:static lg:translate-x-0"
+      :class="isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'"
       style="background: linear-gradient(180deg, #080D16 0%, #0B0F1A 100%);"
     >
       <!-- Subtle left accent glow -->
@@ -108,10 +116,18 @@
     <main class="flex flex-1 flex-col overflow-hidden">
 
       <!-- Top bar -->
-      <header class="flex h-14 flex-shrink-0 items-center justify-between border-b border-border bg-navy-900 px-6">
+      <header class="flex h-14 flex-shrink-0 items-center justify-between border-b border-border bg-navy-900 px-4 lg:px-6">
         <div class="flex items-center gap-2 text-sm text-slate-500">
-          <span>CyberShield AI</span>
-          <span class="text-slate-700">/</span>
+          <button
+            @click="isMobileMenuOpen = true"
+            class="mr-2 rounded-md p-1.5 text-slate-400 hover:bg-surface-raised hover:text-slate-200 lg:hidden"
+          >
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+          <span class="hidden sm:inline">CyberShield AI</span>
+          <span class="hidden text-slate-700 sm:inline">/</span>
           <span class="text-slate-300">{{ pageTitle }}</span>
         </div>
         <div class="flex items-center gap-3">
@@ -136,11 +152,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
 const { isLoggedIn, isAdmin, username, logout } = useAuth()
+
+const isMobileMenuOpen = ref(false)
+
+// Close mobile menu when route changes
+watch(() => route.path, () => {
+  isMobileMenuOpen.value = false
+})
 
 // ── Current time (updated every second) ────────────────────────────────────
 const time = ref('')

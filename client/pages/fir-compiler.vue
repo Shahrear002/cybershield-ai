@@ -50,13 +50,13 @@
     <!-- ═══════════════════════════════════════════════════════════════════════
          SPLIT PANEL
          ═══════════════════════════════════════════════════════════════════════ -->
-    <div class="flex flex-1 overflow-hidden">
+    <div class="flex flex-col lg:flex-row flex-1 overflow-y-auto lg:overflow-hidden">
 
       <!-- ─────────────────────────────────────────────────────────────────────
            LEFT: CONFIGURATION PANEL
            ───────────────────────────────────────────────────────────────────── -->
-      <aside class="flex w-80 flex-shrink-0 flex-col overflow-hidden border-r border-border bg-navy-900">
-        <div class="flex flex-1 flex-col gap-0 overflow-y-auto p-5 scrollbar-thin">
+      <aside class="flex w-full lg:w-80 flex-shrink-0 flex-col lg:overflow-hidden border-b lg:border-b-0 border-r-0 lg:border-r border-border bg-navy-900">
+        <div class="flex flex-1 flex-col gap-0 lg:overflow-y-auto p-5 scrollbar-thin">
 
           <!-- ── Language Toggle ─────────────────────────────────────────── -->
           <section class="mb-5">
@@ -318,7 +318,7 @@
       <!-- ─────────────────────────────────────────────────────────────────────
            RIGHT: DOCUMENT PREVIEW PANEL
            ───────────────────────────────────────────────────────────────────── -->
-      <section class="flex flex-1 flex-col overflow-hidden bg-slate-700/20">
+      <section class="flex flex-1 flex-col overflow-visible lg:overflow-hidden bg-slate-700/20">
 
         <!-- Preview toolbar bar -->
         <div class="flex flex-shrink-0 items-center justify-between gap-3 border-b border-border bg-navy-900 px-5 py-2.5">
@@ -344,7 +344,7 @@
         </div>
 
         <!-- Scrollable A4 canvas -->
-        <div class="flex flex-1 items-start justify-center overflow-y-auto bg-gradient-to-b from-slate-800/40 to-slate-900/60 p-8">
+        <div class="w-full overflow-x-auto overflow-y-auto shadow-inner bg-slate-900/50 p-4 lg:p-8 flex flex-1 items-start lg:justify-center">
 
           <!-- ─────────────────── A4 DOCUMENT ─────────────────── -->
           <div

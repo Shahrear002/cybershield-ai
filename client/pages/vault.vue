@@ -171,13 +171,14 @@
         </div>
 
         <!-- ── THE CERTIFICATE ─────────────────────────────────────────── -->
-        <div
-          v-if="certificate"
-          id="evidence-certificate"
-          ref="certificateRef"
-          class="animate-slide-up overflow-hidden rounded-2xl border print-cert"
-          style="border-color: rgba(99,102,241,0.4); box-shadow: 0 0 40px rgba(99,102,241,0.12), 0 4px 24px rgba(0,0,0,0.5);"
-        >
+        <div class="w-full overflow-x-auto">
+          <div
+            v-if="certificate"
+            id="evidence-certificate"
+            ref="certificateRef"
+            class="animate-slide-up overflow-hidden rounded-2xl border print-cert min-w-[320px]"
+            style="border-color: rgba(99,102,241,0.4); box-shadow: 0 0 40px rgba(99,102,241,0.12), 0 4px 24px rgba(0,0,0,0.5);"
+          >
           <!-- Certificate header gradient band -->
           <div class="relative px-6 py-5" style="background: linear-gradient(135deg, #312E81 0%, #1E1B4B 60%, #0B0F1A 100%);">
             <div class="flex items-start justify-between">
@@ -343,6 +344,7 @@
             </div>
 
           </div>
+        </div>
         </div>
       </div>
     </div>

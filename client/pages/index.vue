@@ -16,8 +16,8 @@
       <p class="mb-10 text-sm text-slate-600">Hackathon Prototype · Bangladesh Cyber Security Act 2023</p>
 
       <!-- Stat strip -->
-      <div class="mb-10 flex items-center justify-center gap-8">
-        <div v-for="stat in STATS" :key="stat.label" class="text-center">
+      <div class="mb-10 flex flex-wrap items-center justify-center gap-8">
+        <div v-for="stat in STATS" :key="stat.label" class="text-center w-full sm:w-auto">
           <p class="text-2xl font-bold" :style="{ color: stat.color }">{{ stat.value }}</p>
           <p class="text-xs text-slate-600">{{ stat.label }}</p>
         </div>
