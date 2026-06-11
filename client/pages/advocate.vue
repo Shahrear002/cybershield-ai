@@ -572,6 +572,10 @@ function openFirModal() {
       legalJustification: analysis.value.legalJustification || ''
     }
     localStorage.setItem('cybershield_triage_data', JSON.stringify(triagePayload))
+    
+    // Override cached summaries with the raw manual input to prevent stale data leaking
+    localStorage.setItem('cybershield_summary_en', transcript.value)
+    localStorage.setItem('cybershield_summary_bn', 'স্বয়ংক্রিয় বাংলা অনুবাদ উপলব্ধ নয় (Automated translation not available for manual entry).')
   }
   navigateTo('/fir-compiler')
 }
