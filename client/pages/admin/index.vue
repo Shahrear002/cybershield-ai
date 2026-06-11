@@ -74,7 +74,7 @@
         </div>
       </div>
       
-      <div v-if="!loading" class="bg-white dark:bg-navy-900 shadow rounded-lg overflow-hidden border border-gray-200 dark:border-navy-800">
+      <div v-if="!loading" class="bg-white dark:bg-navy-900 shadow rounded-lg overflow-x-auto border border-gray-200 dark:border-navy-800">
         <table class="min-w-full divide-y divide-gray-200 dark:divide-navy-700">
           <thead class="bg-gray-50 dark:bg-navy-800">
             <tr>

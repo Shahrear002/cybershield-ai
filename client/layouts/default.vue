@@ -131,12 +131,6 @@
           <span class="text-slate-300">{{ pageTitle }}</span>
         </div>
         <div class="flex items-center gap-3">
-          <!-- Connection indicator -->
-          <div class="flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1 text-xs text-slate-500">
-            <span class="h-1.5 w-1.5 rounded-full bg-cyber-emerald" />
-            API :8080
-          </div>
-          <div class="h-7 w-px bg-border" />
           <!-- Clock -->
           <span class="font-mono text-xs text-slate-600">{{ time }}</span>
         </div>
